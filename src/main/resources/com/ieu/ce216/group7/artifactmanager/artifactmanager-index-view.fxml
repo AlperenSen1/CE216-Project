@@ -19,7 +19,7 @@
       <HBox prefHeight="100.0" prefWidth="200.0">
          <children>
             <Button fx:id="displayArtifactsBtn" mnemonicParsing="false" onAction="#onDisplayArtifactsBtnClick" prefHeight="33.0" prefWidth="119.0" text="Display Artifacts" />
-            <Button fx:id="newArtifactBtn" onAction="#onSaveArtifactBtnClick" mnemonicParsing="false" prefHeight="33.0" prefWidth="119.0" text="New Artifact" />
+            <Button fx:id="newArtifactBtn" onAction="#onNewArtifactBtnClick" mnemonicParsing="false" prefHeight="33.0" prefWidth="119.0" text="New Artifact" />
          </children>
       </HBox>
    </children>
