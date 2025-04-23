@@ -26,6 +26,8 @@ import java.nio.file.Paths;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ArtifactManagerController {
@@ -42,6 +44,15 @@ public class ArtifactManagerController {
     public TextField dimensionsTf;
     public TextArea weightTf;
     public ChoiceBox tagsCC;
+
+    public TableColumn idCol;
+    public TableColumn nameCol;
+    public TableColumn categoryCol;
+    public TableColumn civilCol;
+    public TableColumn compositionCol;
+    public TableColumn disLocCol;
+    public TableColumn currPlsceCol;
+
     @FXML
     private HBox contextPathHbox;
     @FXML
@@ -58,6 +69,18 @@ public class ArtifactManagerController {
     protected void onDisplayArtifactsBtnClick() {
         if(checkContextPath()){
             //TODO  open dsiplay artifacts window
+            try {
+                FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("artifactmanager-listartifacts-view.fxml"));
+                Parent root1 = (Parent) fxmlLoader.load();
+                Stage stage = new Stage();
+                //stage.initModality(Modality.APPLICATION_MODAL);
+                //stage.initStyle(StageStyle.UNDECORATED);
+                stage.setTitle("List Artifacts");
+                stage.setScene(new Scene(root1));
+                stage.show();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
     @FXML
@@ -79,25 +102,21 @@ public class ArtifactManagerController {
         }
     }
 
+
     @FXML
+    protected void onSearchArtifactBtnClick() {
+        List<Artifact> artifacts=JSONFileHandler.getArtifactsFromJSONFile(dbFile);
+        List<Artifact> filteredArtifacts=artifacts
+                .stream()
+                .filter(a -> a.getArtifactName().contains(artifactNameTf.getText()))
+                .collect(Collectors.toList());
+
+    }
+
+        @FXML
     protected void onSaveArtifactBtnClick() {
 
-        String inputString=null;
-        try {
-            inputString=Files.readString(dbFile.toPath());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        ObjectMapper om=new ObjectMapper();
-        om.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
-        List<Artifact> artifacts=null;
-        try {
-            artifacts=om.readValue(inputString, new TypeReference<ArrayList<Artifact>>() {
-            });
-        } catch (JsonProcessingException e) {
-            //throw new RuntimeException(e);
-        }
+        List<Artifact> artifacts=JSONFileHandler.getArtifactsFromJSONFile(dbFile);
 
         Artifact artifact = new Artifact();
         artifact.setArtifactId(disDateDp.getValue().getYear()+currPlaceTf.getText().substring(0,3)+artifactNameTf.getText().substring(0,3));
@@ -125,10 +144,10 @@ public class ArtifactManagerController {
         }
         artifacts.add(artifact);
 
-        try {
-            om.writeValue(dbFile, artifacts);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        if(JSONFileHandler.saveArtifacts(artifacts, dbFile).equals("1")){
+            Alert a = new Alert(Alert.AlertType.INFORMATION);
+            a.setContentText("Artifact Saved with Id: "+artifact.getArtifactId());
+            a.show();
         }
 
     }
@@ -136,7 +155,7 @@ public class ArtifactManagerController {
     @FXML
     protected void onSaveContextPathBtnClick() {
         properties = new Properties();
-        Path propFile = Paths.get(ArtifactManagerApplication.class.getResource("application.properties").getPath().substring(1));
+        Path propFile = Paths.get(getPropsFile());
         try {
             properties.load(Files.newBufferedReader(propFile));
             properties.setProperty("context.path", contextPathTf.getText());
@@ -160,7 +179,9 @@ public class ArtifactManagerController {
     private boolean checkContextPath(){
         boolean result = true;
         properties = new Properties();
-        Path propFile = Paths.get(ArtifactManagerApplication.class.getResource("application.properties").getPath().substring(1));
+        //Path propFile = Paths.get(ArtifactManagerApplication.class.getResource("application.properties").getPath().substring(1));
+
+        Path propFile = Paths.get(getPropsFile());
         try {
             properties.load(Files.newBufferedReader(propFile));
         } catch (IOException e) {
@@ -178,5 +199,24 @@ public class ArtifactManagerController {
             result = false;
         }
         return result;
+    }
+
+    private String getPropsFile(){
+        String proppath=System.getProperty("user.home")+"/.ArtifactManager/";
+        proppath=proppath.replaceAll(Pattern.quote("\\"),"/");
+        System.out.println(proppath);
+        if(!new File(proppath).exists()){
+            new File(proppath).mkdirs();
+        }
+        File pf=new File(proppath+"application.properties");
+        try {
+            pf.createNewFile();
+            System.out.println(pf.getAbsolutePath());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        //Path propFile = Paths.get(ArtifactManagerApplication.class.getResource("/").getFile()+"/application.properties");
+
+        return proppath+"application.properties";
     }
 }
