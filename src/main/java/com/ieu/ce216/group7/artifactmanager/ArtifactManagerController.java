@@ -12,6 +12,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -64,6 +65,14 @@ public class ArtifactManagerController {
 
     @FXML
     private Button displayArtifactsBtn;
+
+    @FXML
+    private Button selectImageBtn;
+    @FXML
+    private Label selectedImagePathLbl;
+
+    private String selectedImagePath = null;
+
 
     @FXML
     protected void onDisplayArtifactsBtnClick() {
@@ -129,8 +138,10 @@ public class ArtifactManagerController {
         artifact.setCurrentLocation(currPlaceTf.getText());
         artifact.setTags(tagsCC.getSelectionModel().getSelectedItem().toString());
         artifact.setWeight(Double.parseDouble(weightTf.getText()));
+        artifact.setImagePath(selectedImagePath);
 
-        Dimension dim=new Dimension();
+
+            Dimension dim=new Dimension();
         try {
             dim.setWidth(Double.parseDouble( dimensionsTf.getText().split(Pattern.quote(","))[0] ));
             dim.setHeight(Double.parseDouble( dimensionsTf.getText().split(Pattern.quote(","))[1] ));
@@ -219,4 +230,18 @@ public class ArtifactManagerController {
 
         return proppath+"application.properties";
     }
+    @FXML
+    protected void onSelectImageBtnClick() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Select Artifact Image");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg", "*.gif")
+        );
+        File selectedFile = fileChooser.showOpenDialog(null);
+        if (selectedFile != null) {
+            selectedImagePath = selectedFile.getAbsolutePath();
+            selectedImagePathLbl.setText(selectedImagePath);
+        }
+    }
+
 }
