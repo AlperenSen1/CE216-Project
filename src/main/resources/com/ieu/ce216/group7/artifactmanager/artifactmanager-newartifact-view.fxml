@@ -28,9 +28,11 @@
             </rowConstraints>
             <children>
                 <Label text="ArtifactName" />
-                <TextField fx:id="artifactNameTf" GridPane.columnIndex="1" />
-                <TextField fx:id="disLocationTf" GridPane.columnIndex="3" GridPane.rowIndex="1" />
-                <TextField fx:id="civilizationTf" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                <TextField fx:id="artifactNameTf" GridPane.columnIndex="1" promptText="Enter name of artifact" />
+
+                <TextField fx:id="disLocationTf" GridPane.columnIndex="3" GridPane.rowIndex="1" promptText="e.g. Ephesus, Troy" />
+                <TextField fx:id="civilizationTf" GridPane.columnIndex="1" GridPane.rowIndex="1" promptText="e.g. Roman, Ottoman" />
+
                 <ComboBox fx:id="categoryCb" prefHeight="25.0" prefWidth="247.0" GridPane.columnIndex="3">
                     <items>
                         <FXCollections fx:factory="observableArrayList">
@@ -42,6 +44,7 @@
                         </FXCollections>
                     </items>
                 </ComboBox>
+
                 <ComboBox fx:id="compositionCb" prefHeight="25.0" prefWidth="239.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
                     <items>
                         <FXCollections fx:factory="observableArrayList">
@@ -53,10 +56,13 @@
                         </FXCollections>
                     </items>
                 </ComboBox>
+
                 <DatePicker fx:id="disDateDp" prefHeight="25.0" prefWidth="247.0" GridPane.columnIndex="3" GridPane.rowIndex="2" />
-                <TextField fx:id="currPlaceTf" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                <TextField fx:id="dimensionsTf" GridPane.columnIndex="3" GridPane.rowIndex="3" />
-                <TextArea fx:id="weightTf" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+
+                <TextField fx:id="currPlaceTf" GridPane.columnIndex="1" GridPane.rowIndex="3" promptText="e.g. Louvre Museum" />
+                <TextField fx:id="dimensionsTf" GridPane.columnIndex="3" GridPane.rowIndex="3" promptText="Use comma (e.g. 10,20,30)" />
+                <TextArea fx:id="weightTf" GridPane.columnIndex="1" GridPane.rowIndex="4" promptText="Enter weight in kg (e.g. 12.5)" />
+
                 <ChoiceBox fx:id="tagsCC" prefHeight="25.0" prefWidth="248.0" GridPane.columnIndex="3" GridPane.rowIndex="4">
                     <items>
                         <FXCollections fx:factory="observableArrayList">
@@ -71,6 +77,7 @@
                         </FXCollections>
                     </items>
                 </ChoiceBox>
+
                 <Label text="Civilization" GridPane.rowIndex="1" />
                 <Label text="Composition" GridPane.rowIndex="2" />
                 <Label text="CurrentPlace" GridPane.rowIndex="3" />
@@ -81,11 +88,9 @@
                 <Label text="Dimensions" GridPane.columnIndex="2" GridPane.rowIndex="3" />
                 <Label text="Tags" GridPane.columnIndex="2" GridPane.rowIndex="4" />
 
-                <!-- Yeni eklenen kısım: Image seçme -->
                 <Button fx:id="selectImageBtn" text="Select Image" onAction="#onSelectImageBtnClick" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
                 <Label fx:id="selectedImagePathLbl" text="No file selected" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
 
-                <!-- Kaydetme butonu -->
                 <Button fx:id="saveArtifactBtn" lineSpacing="1.0" mnemonicParsing="false" onAction="#onSaveArtifactBtnClick" prefHeight="25.0" prefWidth="244.0" text="Save" underline="true" GridPane.columnIndex="3" GridPane.rowIndex="5" />
             </children>
         </GridPane>
