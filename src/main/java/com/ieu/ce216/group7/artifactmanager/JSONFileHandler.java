@@ -15,46 +15,51 @@ import java.util.List;
 
 public class JSONFileHandler {
     public static List<Artifact> getArtifactsFromJSONFile(File dbFile) {
-        String inputString=null;
         try {
-            inputString= Files.readString(dbFile.toPath());
+            if (!dbFile.exists()) {
+                // Klasörü oluştur (yoksa)
+                File parentDir = dbFile.getParentFile();
+                if (parentDir != null && !parentDir.exists()) {
+                    parentDir.mkdirs();
+                }
+
+                // Dosyayı oluştur ve boş liste yaz
+                Files.writeString(dbFile.toPath(), "[]");
+            }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("A problem occured when file in creation: " + e.getMessage());
         }
 
-        ObjectMapper om=new ObjectMapper();
-        om.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
-        List<Artifact> artifacts=null;
+        String inputString;
         try {
-            artifacts=om.readValue(inputString, new TypeReference<ArrayList<Artifact>>() {
-            });
+            inputString = Files.readString(dbFile.toPath());
+        } catch (IOException e) {
+            throw new RuntimeException("File can't be read:" + e.getMessage());
+        }
+
+        ObjectMapper om = new ObjectMapper();
+        om.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+        List<Artifact> artifacts = null;
+        try {
+            artifacts = om.readValue(inputString, new TypeReference<ArrayList<Artifact>>() {});
         } catch (JsonProcessingException e) {
-            //throw new RuntimeException(e);
+            artifacts = new ArrayList<>(); // JSON bozuksa en azından boş liste dön
         }
 
         return artifacts;
     }
 
-    public static String saveArtifacts(List<Artifact> artifacts, File dbFile) {
-        String result="0";
-        String inputString=null;
-        try {
-            inputString= Files.readString(dbFile.toPath());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
 
-        ObjectMapper om=new ObjectMapper();
+    public static void saveArtifacts(List<Artifact> artifacts, File file) {
+        ObjectMapper om = new ObjectMapper();
         om.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
 
         try {
-            om.writeValue(dbFile, artifacts);
+            om.writerWithDefaultPrettyPrinter().writeValue(file, artifacts);
         } catch (IOException e) {
-            result="0";
-            //throw new RuntimeException(e);
+            e.printStackTrace();
+            throw new RuntimeException("Could not write file during export.");
         }
-        result="1";
-
-        return result;
     }
+
 }
