@@ -189,19 +189,16 @@ public class ArtifactListController {
 
     @FXML
     protected void onSearchArtifactBtnClick() {
-        //System.out.println("Search butonuna tıklandı (şu an işlevsiz).");
         allArtifacts = JSONFileHandler.getArtifactsFromJSONFile(Utils.dbFile);
         String selCategory = null;
         try{
             selCategory=(String)categoryCb.getSelectionModel().getSelectedItem();
         } catch (Exception e) {
-            selCategory=null;
         }
         String selComposition = null;
         try{
             selComposition=(String)compositionCb.getSelectionModel().getSelectedItem();
         } catch (Exception e) {
-            selComposition=null;
         }
         String finalSelCategory = selCategory;
         String finalSelComposition = selComposition;
