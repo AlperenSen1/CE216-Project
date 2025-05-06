@@ -1,375 +1,182 @@
 package com.ieu.ce216.group7.artifactmanager;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.ieu.ce216.group7.artifactmanager.model.Artifact;
-import com.ieu.ce216.group7.artifactmanager.model.Dimension;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.FileChooser;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Type;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.ZoneId;
-import java.util.*;
-import java.util.regex.Pattern;
+import java.util.List;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-public class ArtifactManagerController {
-    private static Properties properties;
-    private static File dbFile;
-
-    public TextField artifactNameTf;
-    public TextField disLocationTf;
-    public TextField civilizationTf;
-    public ComboBox categoryCb;
-    public ComboBox compositionCb;
-    public DatePicker disDateDp;
-    public TextField currPlaceTf;
-    public TextField dimensionsTf;
-    public TextArea weightTf;
-    public ChoiceBox tagsCC;
-
-    public TableColumn idCol;
-    public TableColumn nameCol;
-    public TableColumn categoryCol;
-    public TableColumn civilCol;
-    public TableColumn compositionCol;
-    public TableColumn disLocCol;
-    public TableColumn currPlaceCol;
+public class ArtifactListController {
 
     @FXML
-    private HBox contextPathHbox;
-    @FXML
-    private Label contextPathLbl;
-    @FXML
-    private TextField contextPathTf;
-    @FXML
-    private Button saveContextPathBtn;
+    private TableView<Artifact> artifactTable;
 
     @FXML
-    private Button displayArtifactsBtn;
+    private TableColumn<Artifact, String> idCol;
+    @FXML
+    private TableColumn<Artifact, String> nameCol;
+    @FXML
+    private TableColumn<Artifact, String> categoryCol;
+    @FXML
+    private TableColumn<Artifact, String> civilCol;
+    @FXML
+    private TableColumn<Artifact, String> compositionCol;
+    @FXML
+    private TableColumn<Artifact, String> disLocCol;
+    @FXML
+    private TableColumn<Artifact, String> currPlaceCol;
 
     @FXML
-    private Button selectImageBtn;
-    @FXML
-    private Label selectedImagePathLbl;
-
-    private String selectedImagePath = null;
-
-    @FXML
-    private TableView<Artifact> artifactListTV;
-
+    private ListView<String> tagFilterList;
+    private List<Artifact> allArtifacts;
 
 
     @FXML
-    protected void onDisplayArtifactsBtnClick() {
-        if (checkContextPath()) {
-            try {
-                FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("artifactmanager-listartifacts-view.fxml"));
-                Parent root1 = fxmlLoader.load();
+    public void initialize() {
+        idCol.setCellValueFactory(new PropertyValueFactory<>("artifactId"));
+        nameCol.setCellValueFactory(new PropertyValueFactory<>("artifactName"));
+        categoryCol.setCellValueFactory(new PropertyValueFactory<>("category"));
+        civilCol.setCellValueFactory(new PropertyValueFactory<>("civilization"));
+        compositionCol.setCellValueFactory(new PropertyValueFactory<>("composition"));
+        disLocCol.setCellValueFactory(new PropertyValueFactory<>("discoveryLocation"));
+        currPlaceCol.setCellValueFactory(new PropertyValueFactory<>("currentLocation"));
 
-                // 🔥 Controller'a eriş
-                com.ieu.ce216.group7.artifactmanager.ArtifactListController controller = fxmlLoader.getController();
+        artifactTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-                // ✅ JSON dosya yolunu veriyoruz
-                controller.setDbFile(dbFile);
+        //dbFile = new File(System.getProperty("user.home") + "/.ArtifactManager/ArtifactManagerDB.json");
+        allArtifacts = JSONFileHandler.getArtifactsFromJSONFile(Utils.dbFile);
+        artifactTable.getItems().addAll(allArtifacts);
 
-                // JSON'dan verileri oku
-                List<Artifact> artifacts = JSONFileHandler.getArtifactsFromJSONFile(dbFile);
-                controller.populateTable(artifacts);
-
-                // Pencereyi aç
-                Stage stage = new Stage();
-                stage.setTitle("List Artifacts");
-                stage.setScene(new Scene(root1));
-                stage.show();
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        tagFilterList.getItems().addAll("hellenistic", "neoclassical", "contemporary", "sword", "bow", "axe", "necklace", "ring");
+        tagFilterList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
     }
 
-
-
-
-    @FXML
-    protected void onNewArtifactBtnClick() {
-        if(checkContextPath()){
-            //TODO  open new artifact window
-            try {
-                FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("artifactmanager-newartifact-view.fxml"));
-                Parent root1 = (Parent) fxmlLoader.load();
-                Stage stage = new Stage();
-                //stage.initModality(Modality.APPLICATION_MODAL);
-                //stage.initStyle(StageStyle.UNDECORATED);
-                stage.setTitle("New Artifact");
-                stage.setScene(new Scene(root1));
-                stage.show();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
+    public void populateTable(List<Artifact> artifactList) {
+        this.allArtifacts = artifactList;
+        ObservableList<Artifact> data = FXCollections.observableArrayList(artifactList);
+        artifactTable.setItems(data);
     }
 
-
     @FXML
-    protected void onSearchArtifactBtnClick() {
-        if (dbFile == null || !dbFile.exists()) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setContentText("Veritabanı dosyası bulunamadı.");
+    private void onDeleteArtifactBtnClick() {
+        ObservableList<Artifact> selected = artifactTable.getSelectionModel().getSelectedItems();
+
+        if (selected.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.WARNING, "Lütfen silmek için en az bir artifact seçin.", ButtonType.OK);
             alert.show();
             return;
         }
 
-        List<Artifact> artifacts = JSONFileHandler.getArtifactsFromJSONFile(dbFile);
-        if (artifacts == null) artifacts = new ArrayList<>();
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Seçili artifact(ler) silinsin mi?", ButtonType.YES, ButtonType.NO);
+        confirm.showAndWait();
 
-        String searchText = artifactNameTf.getText().toLowerCase().trim();
-
-        List<Artifact> filteredArtifacts = artifacts.stream()
-                .filter(a -> a.getArtifactName().toLowerCase().contains(searchText))
-                .collect(Collectors.toList());
-
-        artifactListTV.getItems().setAll(filteredArtifacts);
-    }
-
-
-    @FXML
-    protected void onSaveArtifactBtnClick() {
-
-        List<Artifact> artifacts=JSONFileHandler.getArtifactsFromJSONFile(dbFile);
-
-        Artifact artifact = new Artifact();
-        artifact.setArtifactId(disDateDp.getValue().getYear()+currPlaceTf.getText().substring(0,3)+artifactNameTf.getText().substring(0,3));
-        artifact.setArtifactName(artifactNameTf.getText());
-        artifact.setCivilization(civilizationTf.getText());
-        artifact.setCategory(categoryCb.getSelectionModel().getSelectedItem().toString());
-        artifact.setDiscoveryLocation(disLocationTf.getText());
-        artifact.setDiscoverydate(Date.from(disDateDp.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant()));
-        artifact.setComposition(compositionCb.getSelectionModel().getSelectedItem().toString());
-        artifact.setCurrentLocation(currPlaceTf.getText());
-        artifact.setTags(tagsCC.getSelectionModel().getSelectedItem().toString());
-        artifact.setWeight(Double.parseDouble(weightTf.getText()));
-        artifact.setImagePath(selectedImagePath);
-
-
-            Dimension dim=new Dimension();
-        try {
-            dim.setWidth(Double.parseDouble( dimensionsTf.getText().split(Pattern.quote(","))[0] ));
-            dim.setHeight(Double.parseDouble( dimensionsTf.getText().split(Pattern.quote(","))[1] ));
-            dim.setLength(Double.parseDouble( dimensionsTf.getText().split(Pattern.quote(","))[2] ));
-        } catch (Exception ignored) {
-
+        if (confirm.getResult() == ButtonType.YES) {
+            List<Artifact> artifacts = JSONFileHandler.getArtifactsFromJSONFile(Utils.dbFile);
+            for (Artifact a : selected) {
+                artifacts.removeIf(x -> x.getArtifactId().equals(a.getArtifactId()));
+            }
+            JSONFileHandler.saveArtifacts(artifacts, Utils.dbFile);
+            artifactTable.getItems().removeAll(selected);
         }
-        artifact.setDimensions(dim);
-        if(artifacts==null){
-            artifacts=new ArrayList<Artifact>();
-        }
-        artifacts.add(artifact);
-
-        JSONFileHandler.saveArtifacts(artifacts, dbFile);
-            Alert a = new Alert(Alert.AlertType.INFORMATION);
-            a.setContentText("Artifact Saved with Id: "+artifact.getArtifactId());
-            a.show();
-
-        // Kaydettikten sonra liste ekranını yeniden aç
-        onDisplayArtifactsBtnClick();
-
-
     }
 
     @FXML
-    protected void onSaveContextPathBtnClick() {
-        properties = new Properties();
-        Path propFile = Paths.get(getPropsFile());
+    private void onEditArtifactBtnClick() {
+        Artifact selectedArtifact = artifactTable.getSelectionModel().getSelectedItem();
+
+        if (selectedArtifact == null) {
+            Alert alert = new Alert(Alert.AlertType.WARNING, "Lütfen düzenlemek için bir artifact seçin.", ButtonType.OK);
+            alert.show();
+            return;
+        }
+
         try {
-            properties.load(Files.newBufferedReader(propFile));
-            properties.setProperty("context.path", contextPathTf.getText());
-            properties.store(Files.newBufferedWriter(propFile), null);
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("artifactmanager-newartifact-view.fxml"));
+            Parent root = loader.load();
 
-            Files.createDirectories(Paths.get(properties.getProperty("context.path")));
-            Files.createFile(Paths.get(properties.getProperty("context.path")+"/ArtifactManagerDB.json"));
+            ArtifactManagerController controller = loader.getController();
+            controller.fillArtifactFormForEdit(selectedArtifact);
 
-            contextPathLbl.setText("Context Path is set");
-            contextPathTf.setVisible(false);
-            saveContextPathBtn.setVisible(false);
+            Stage stage = new Stage();
+            stage.setTitle("Edit Artifact");
+            stage.setScene(new Scene(root));
+            stage.show();
         } catch (IOException e) {
-            properties=null;
-        }
-        if(properties!=null){
-
-        }
-
-    }
-
-
-    private boolean checkContextPath(){
-        boolean result = true;
-        properties = new Properties();
-        //Path propFile = Paths.get(ArtifactManagerApplication.class.getResource("application.properties").getPath().substring(1));
-
-        Path propFile = Paths.get(getPropsFile());
-        try {
-            properties.load(Files.newBufferedReader(propFile));
-        } catch (IOException e) {
-            properties=null;
-        }
-        if(properties!=null && properties.getProperty("context.path")!=null) {
-            //indexLbl.setText(properties.getProperty("context.path"));
-            dbFile=new File(properties.getProperty("context.path")+"/ArtifactManagerDB.json");
-        }else{
-            contextPathLbl.setText("Context Path not set. Please enter the context path:");
-            contextPathHbox.setVisible(true);
-            contextPathLbl.setVisible(true);
-            contextPathTf.setVisible(true);
-            saveContextPathBtn.setVisible(true);
-            result = false;
-        }
-        return result;
-    }
-
-    private String getPropsFile(){
-        String proppath=System.getProperty("user.home")+"/.ArtifactManager/";
-        proppath=proppath.replaceAll(Pattern.quote("\\"),"/");
-        System.out.println(proppath);
-        if(!new File(proppath).exists()){
-            new File(proppath).mkdirs();
-        }
-        File pf=new File(proppath+"application.properties");
-        try {
-            pf.createNewFile();
-            System.out.println(pf.getAbsolutePath());
-        } catch (Exception e) {
             e.printStackTrace();
         }
-        //Path propFile = Paths.get(ArtifactManagerApplication.class.getResource("/").getFile()+"/application.properties");
-
-        return proppath+"application.properties";
-    }
-    @FXML
-    protected void onSelectImageBtnClick() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Select Artifact Image");
-        fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg", "*.gif")
-        );
-        File selectedFile = fileChooser.showOpenDialog(null);
-        if (selectedFile != null) {
-            selectedImagePath = selectedFile.getAbsolutePath();
-            selectedImagePathLbl.setText(selectedImagePath);
-        }
-    }
-
-    public void fillArtifactFormForEdit(Artifact artifact) {
-        artifactNameTf.setText(artifact.getArtifactName());
-        civilizationTf.setText(artifact.getCivilization());
-        disLocationTf.setText(artifact.getDiscoveryLocation());
-        currPlaceTf.setText(artifact.getCurrentLocation());
-        weightTf.setText(String.valueOf(artifact.getWeight()));
-
-        compositionCb.getSelectionModel().select(artifact.getComposition());
-        categoryCb.getSelectionModel().select(artifact.getCategory());
-        tagsCC.getSelectionModel().select(artifact.getTags());
-
-        // Date
-        disDateDp.setValue(artifact.getDiscoverydate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-
-        // Dimensions
-        if (artifact.getDimensions() != null) {
-            Dimension dim = artifact.getDimensions();
-            dimensionsTf.setText(dim.getWidth() + "," + dim.getHeight() + "," + dim.getLength());
-        }
-
-        selectedImagePath = artifact.getImagePath();
-        if (selectedImagePathLbl != null) selectedImagePathLbl.setText(selectedImagePath);
-
-        // Artifact'ı kayıttan önce sil (aynı ID'yle yeniden eklemek için)
-        List<Artifact> artifacts = JSONFileHandler.getArtifactsFromJSONFile(dbFile);
-        artifacts.removeIf(a -> a.getArtifactId().equals(artifact.getArtifactId()));
-        JSONFileHandler.saveArtifacts(artifacts, dbFile);
-    }
-
-    @FXML
-    private void onHelpBtnClick() {
-        String manual =
-                "📘 Artifact Manager – User Manual\n\n" +
-                        "🏁 Getting Started:\n" +
-                        "- Click 'New Artifact' to add a new entry.\n" +
-                        "- Click 'Display Artifacts' to view, edit, or delete artifacts.\n\n" +
-
-                        "➕ Adding a New Artifact:\n" +
-                        "- Fill in all the fields: name, civilization, location, date, etc.\n" +
-                        "- Use commas for dimensions (e.g. 10,20,30).\n" +
-                        "- Click 'Save' to store the artifact.\n\n" +
-
-                        "📋 Viewing Artifacts:\n" +
-                        "- See all artifacts in a table view.\n" +
-                        "- Use 'Edit' to modify the selected item.\n" +
-                        "- Use 'Delete' to remove the selected item.\n\n" +
-
-                        "🆘 Need Help?\n" +
-                        "- Ask Mr. Çağkan 😎";
-
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Help Manual");
-        alert.setHeaderText("How to use Artifact Manager");
-        alert.setContentText(manual);
-        alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE); // Tüm içeriği göstermek için
-        alert.showAndWait();
     }
 
     @FXML
     private void onListByTagBtnClick() {
-        try {
-            File dbFile = new File(System.getProperty("user.home") + "/.ArtifactManager/ArtifactManagerDB.json");
-            List<Artifact> artifacts = JSONFileHandler.getArtifactsFromJSONFile(dbFile);
+        ObservableList<String> selectedTags = tagFilterList.getSelectionModel().getSelectedItems();
 
-            // Seçilen tag'leri al (örneğin ChoiceBox ile)
-            List<String> selectedTags = List.of("sword", "necklace"); // örnek olarak sabit
+        if (selectedTags.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION, "Please select at least one tag.", ButtonType.OK);
+            alert.show();
+            return;
+        }
 
-            List<Artifact> filtered = artifacts.stream()
-                    .filter(a -> selectedTags.contains(a.getTags()))
-                    .collect(Collectors.toList());
+        List<Artifact> filtered = allArtifacts.stream()
+                .filter(a -> selectedTags.contains(a.getTags()))
+                .collect(Collectors.toList());
 
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("artifactmanager-listartifacts-view.fxml"));
-            Parent root = fxmlLoader.load();
-            com.ieu.ce216.group7.artifactmanager.ArtifactListController controller = fxmlLoader.getController();
-            controller.populateTable(filtered);
+        populateTable(filtered);
+    }
 
-            Stage stage = new Stage();
-            stage.setTitle("Filtered Artifacts");
-            stage.setScene(new Scene(root));
-            stage.show();
+    @FXML
+    private void onExportJsonBtnClick() {
+        ObservableList<Artifact> selected = artifactTable.getSelectionModel().getSelectedItems();
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (selected.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION, "Please select at least one artifact to export.", ButtonType.OK);
+            alert.show();
+            return;
+        }
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Export JSON File");
+        fileChooser.setInitialFileName("exported_artifacts.json");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON files", "*.json"));
+        File selectedFile = fileChooser.showSaveDialog(artifactTable.getScene().getWindow());
+
+        if (selectedFile != null) {
+            JSONFileHandler.saveArtifacts(selected, selectedFile);
+            Alert success = new Alert(Alert.AlertType.INFORMATION, "Artifacts exported successfully.", ButtonType.OK);
+            success.show();
         }
     }
 
+    @FXML
+    private void onImportJsonBtnClick() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Import JSON File");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON files", "*.json"));
+        File selectedFile = fileChooser.showOpenDialog(artifactTable.getScene().getWindow());
 
+        if (selectedFile != null) {
+            List<Artifact> imported = JSONFileHandler.getArtifactsFromJSONFile(selectedFile);
+            List<Artifact> current = JSONFileHandler.getArtifactsFromJSONFile(Utils.dbFile);
 
+            current.addAll(imported);
+            JSONFileHandler.saveArtifacts(current, Utils.dbFile);
 
+            populateTable(current);
+        }
+    }
 
-
-
-
+    @FXML
+    protected void onSearchArtifactBtnClick() {
+        System.out.println("Search butonuna tıklandı (şu an işlevsiz).");
+    }
 }

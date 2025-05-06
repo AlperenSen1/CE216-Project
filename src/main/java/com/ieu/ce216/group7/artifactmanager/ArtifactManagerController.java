@@ -1,3 +1,4 @@
+
 package com.ieu.ce216.group7.artifactmanager;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -33,8 +34,7 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ArtifactManagerController {
-    private static Properties properties;
-    private static File dbFile;
+
 
     public TextField artifactNameTf;
     public TextField disLocationTf;
@@ -81,7 +81,7 @@ public class ArtifactManagerController {
 
     @FXML
     protected void onDisplayArtifactsBtnClick() {
-        if (checkContextPath()) {
+        if (Utils.checkContextPath()) {
             try {
                 FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("artifactmanager-listartifacts-view.fxml"));
                 Parent root1 = fxmlLoader.load();
@@ -90,10 +90,10 @@ public class ArtifactManagerController {
                 com.ieu.ce216.group7.artifactmanager.ArtifactListController controller = fxmlLoader.getController();
 
                 // ✅ JSON dosya yolunu veriyoruz
-                controller.setDbFile(dbFile);
+                //controller.setDbFile(Utils.dbFile);
 
                 // JSON'dan verileri oku
-                List<Artifact> artifacts = JSONFileHandler.getArtifactsFromJSONFile(dbFile);
+                List<Artifact> artifacts = JSONFileHandler.getArtifactsFromJSONFile(Utils.dbFile);
                 controller.populateTable(artifacts);
 
                 // Pencereyi aç
@@ -105,6 +105,12 @@ public class ArtifactManagerController {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }else{
+            contextPathLbl.setText("Context Path not set. Please enter the context path:");
+            contextPathHbox.setVisible(true);
+            contextPathLbl.setVisible(true);
+            contextPathTf.setVisible(true);
+            saveContextPathBtn.setVisible(true);
         }
     }
 
@@ -113,7 +119,7 @@ public class ArtifactManagerController {
 
     @FXML
     protected void onNewArtifactBtnClick() {
-        if(checkContextPath()){
+        if(Utils.checkContextPath()){
             //TODO  open new artifact window
             try {
                 FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("artifactmanager-newartifact-view.fxml"));
@@ -127,20 +133,26 @@ public class ArtifactManagerController {
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
+        }else{
+            contextPathLbl.setText("Context Path not set. Please enter the context path:");
+            contextPathHbox.setVisible(true);
+            contextPathLbl.setVisible(true);
+            contextPathTf.setVisible(true);
+            saveContextPathBtn.setVisible(true);
         }
     }
 
 
     @FXML
     protected void onSearchArtifactBtnClick() {
-        if (dbFile == null || !dbFile.exists()) {
+        if (Utils.dbFile == null || !Utils.dbFile.exists()) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setContentText("Veritabanı dosyası bulunamadı.");
+            alert.setContentText("DB File not found.");
             alert.show();
             return;
         }
 
-        List<Artifact> artifacts = JSONFileHandler.getArtifactsFromJSONFile(dbFile);
+        List<Artifact> artifacts = JSONFileHandler.getArtifactsFromJSONFile(Utils.dbFile);
         if (artifacts == null) artifacts = new ArrayList<>();
 
         String searchText = artifactNameTf.getText().toLowerCase().trim();
@@ -156,7 +168,7 @@ public class ArtifactManagerController {
     @FXML
     protected void onSaveArtifactBtnClick() {
 
-        List<Artifact> artifacts=JSONFileHandler.getArtifactsFromJSONFile(dbFile);
+        List<Artifact> artifacts=JSONFileHandler.getArtifactsFromJSONFile(Utils.dbFile);
 
         Artifact artifact = new Artifact();
         artifact.setArtifactId(disDateDp.getValue().getYear()+currPlaceTf.getText().substring(0,3)+artifactNameTf.getText().substring(0,3));
@@ -172,7 +184,7 @@ public class ArtifactManagerController {
         artifact.setImagePath(selectedImagePath);
 
 
-            Dimension dim=new Dimension();
+        Dimension dim=new Dimension();
         try {
             dim.setWidth(Double.parseDouble( dimensionsTf.getText().split(Pattern.quote(","))[0] ));
             dim.setHeight(Double.parseDouble( dimensionsTf.getText().split(Pattern.quote(","))[1] ));
@@ -186,12 +198,12 @@ public class ArtifactManagerController {
         }
         artifacts.add(artifact);
 
-        JSONFileHandler.saveArtifacts(artifacts, dbFile);
-            Alert a = new Alert(Alert.AlertType.INFORMATION);
-            a.setContentText("Artifact Saved with Id: "+artifact.getArtifactId());
-            a.show();
+        JSONFileHandler.saveArtifacts(artifacts, Utils.dbFile);
+        Alert a = new Alert(Alert.AlertType.INFORMATION);
+        a.setContentText("Artifact Saved with Id: "+artifact.getArtifactId());
+        a.show();
 
-        // Kaydettikten sonra liste ekranını yeniden aç
+        // open list screen after save
         onDisplayArtifactsBtnClick();
 
 
@@ -199,72 +211,32 @@ public class ArtifactManagerController {
 
     @FXML
     protected void onSaveContextPathBtnClick() {
-        properties = new Properties();
-        Path propFile = Paths.get(getPropsFile());
+        Utils.properties = new Properties();
+        Path propFile = Paths.get(Utils.getPropsFile());
         try {
-            properties.load(Files.newBufferedReader(propFile));
-            properties.setProperty("context.path", contextPathTf.getText());
-            properties.store(Files.newBufferedWriter(propFile), null);
+            Utils.properties.load(Files.newBufferedReader(propFile));
+            Utils.properties.setProperty("context.path", contextPathTf.getText());
+            Utils.properties.store(Files.newBufferedWriter(propFile), null);
 
-            Files.createDirectories(Paths.get(properties.getProperty("context.path")));
-            Files.createFile(Paths.get(properties.getProperty("context.path")+"/ArtifactManagerDB.json"));
+            Files.createDirectories(Paths.get(Utils.properties.getProperty("context.path")));
+            Files.createFile(Paths.get(Utils.properties.getProperty("context.path")+"/ArtifactManagerDB.json"));
 
             contextPathLbl.setText("Context Path is set");
             contextPathTf.setVisible(false);
             saveContextPathBtn.setVisible(false);
         } catch (IOException e) {
-            properties=null;
+            Utils.properties=null;
         }
-        if(properties!=null){
+        if(Utils.properties!=null){
 
         }
 
     }
 
 
-    private boolean checkContextPath(){
-        boolean result = true;
-        properties = new Properties();
-        //Path propFile = Paths.get(ArtifactManagerApplication.class.getResource("application.properties").getPath().substring(1));
 
-        Path propFile = Paths.get(getPropsFile());
-        try {
-            properties.load(Files.newBufferedReader(propFile));
-        } catch (IOException e) {
-            properties=null;
-        }
-        if(properties!=null && properties.getProperty("context.path")!=null) {
-            //indexLbl.setText(properties.getProperty("context.path"));
-            dbFile=new File(properties.getProperty("context.path")+"/ArtifactManagerDB.json");
-        }else{
-            contextPathLbl.setText("Context Path not set. Please enter the context path:");
-            contextPathHbox.setVisible(true);
-            contextPathLbl.setVisible(true);
-            contextPathTf.setVisible(true);
-            saveContextPathBtn.setVisible(true);
-            result = false;
-        }
-        return result;
-    }
 
-    private String getPropsFile(){
-        String proppath=System.getProperty("user.home")+"/.ArtifactManager/";
-        proppath=proppath.replaceAll(Pattern.quote("\\"),"/");
-        System.out.println(proppath);
-        if(!new File(proppath).exists()){
-            new File(proppath).mkdirs();
-        }
-        File pf=new File(proppath+"application.properties");
-        try {
-            pf.createNewFile();
-            System.out.println(pf.getAbsolutePath());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        //Path propFile = Paths.get(ArtifactManagerApplication.class.getResource("/").getFile()+"/application.properties");
 
-        return proppath+"application.properties";
-    }
     @FXML
     protected void onSelectImageBtnClick() {
         FileChooser fileChooser = new FileChooser();
@@ -302,10 +274,10 @@ public class ArtifactManagerController {
         selectedImagePath = artifact.getImagePath();
         if (selectedImagePathLbl != null) selectedImagePathLbl.setText(selectedImagePath);
 
-        // Artifact'ı kayıttan önce sil (aynı ID'yle yeniden eklemek için)
-        List<Artifact> artifacts = JSONFileHandler.getArtifactsFromJSONFile(dbFile);
+        // delete artifact before save (to save with Same Id)
+        List<Artifact> artifacts = JSONFileHandler.getArtifactsFromJSONFile(Utils.dbFile);
         artifacts.removeIf(a -> a.getArtifactId().equals(artifact.getArtifactId()));
-        JSONFileHandler.saveArtifacts(artifacts, dbFile);
+        JSONFileHandler.saveArtifacts(artifacts, Utils.dbFile);
     }
 
     @FXML
