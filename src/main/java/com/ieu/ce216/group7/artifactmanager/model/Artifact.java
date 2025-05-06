@@ -15,10 +15,13 @@ public class Artifact {
     private String composition;
     private String tags;
 
+    private String imagePath;
+
+
     public Artifact() {
     }
 
-    public Artifact(String artifactId, String artifactName, String category, String civilization, String discoveryLocation, Date discoverydate, String currentLocation, Dimension dimensions, Double weight, String composition, String tags) {
+    public Artifact(String artifactId, String artifactName, String category, String civilization, String discoveryLocation, Date discoverydate, String currentLocation, Dimension dimensions, Double weight, String composition, String tags, String imagePath) {
         this.artifactId = artifactId;
         this.artifactName = artifactName;
         this.category = category;
@@ -30,6 +33,7 @@ public class Artifact {
         this.weight = weight;
         this.composition = composition;
         this.tags = tags;
+        this.imagePath= imagePath;
     }
 
     public String getArtifactId() {
@@ -119,4 +123,7 @@ public class Artifact {
     public void setTags(String tags) {
         this.tags = tags;
     }
+
+    public String getImagePath(){return imagePath;}
+    public void setImagePath(String imagePath){this.imagePath=imagePath;}
 }
