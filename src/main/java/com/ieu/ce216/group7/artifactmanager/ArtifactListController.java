@@ -41,6 +41,16 @@ public class ArtifactListController {
     private ListView<String> tagFilterList;
     private List<Artifact> allArtifacts;
 
+    public TextField artifactNameTf;
+    public TextField disLocationTf;
+    public TextField civilizationTf;
+    public ComboBox categoryCb;
+    public ComboBox compositionCb;
+    public DatePicker disDateDp;
+    public TextField currPlaceTf;
+    public TextField dimensionsTf;
+    public TextArea weightTf;
+
 
     @FXML
     public void initialize() {
@@ -119,6 +129,7 @@ public class ArtifactListController {
 
     @FXML
     private void onListByTagBtnClick() {
+        allArtifacts = JSONFileHandler.getArtifactsFromJSONFile(Utils.dbFile);
         ObservableList<String> selectedTags = tagFilterList.getSelectionModel().getSelectedItems();
 
         if (selectedTags.isEmpty()) {
@@ -177,6 +188,20 @@ public class ArtifactListController {
 
     @FXML
     protected void onSearchArtifactBtnClick() {
-        System.out.println("Search butonuna tıklandı (şu an işlevsiz).");
+        //System.out.println("Search butonuna tıklandı (şu an işlevsiz).");
+        allArtifacts = JSONFileHandler.getArtifactsFromJSONFile(Utils.dbFile);
+        String selCategory=null;
+        selCategory=(String)categoryCb.getSelectionModel().getSelectedItem();
+        String finalSelCategory = selCategory;
+        List<Artifact> filtered = allArtifacts.stream()
+                .filter(a -> a.getArtifactName().contains(artifactNameTf.getText())
+                        && (civilizationTf.getText()!=null && civilizationTf.getText().trim().length()>0?a.getCivilization().contains(civilizationTf.getText().trim()):true)
+                        && (currPlaceTf.getText()!=null && currPlaceTf.getText().trim().length()>0?a.getCurrentLocation().contains(currPlaceTf.getText().trim()):true)
+                        && (disLocationTf.getText()!=null && disLocationTf.getText().trim().length()>0?a.getDiscoveryLocation().contains(disLocationTf.getText().trim()):true)
+                        && (finalSelCategory !=null && finalSelCategory.trim().length()>0?a.getCategory().contains(finalSelCategory.trim()):true)
+                )
+                .collect(Collectors.toList());
+
+        populateTable(filtered);
     }
 }
