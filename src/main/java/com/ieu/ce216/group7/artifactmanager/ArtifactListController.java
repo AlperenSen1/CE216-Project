@@ -41,6 +41,7 @@ public class ArtifactListController {
     private ListView<String> tagFilterList;
     private List<Artifact> allArtifacts;
 
+    public TextField artifactIdTf;
     public TextField artifactNameTf;
     public TextField disLocationTf;
     public TextField civilizationTf;
@@ -190,15 +191,28 @@ public class ArtifactListController {
     protected void onSearchArtifactBtnClick() {
         //System.out.println("Search butonuna tıklandı (şu an işlevsiz).");
         allArtifacts = JSONFileHandler.getArtifactsFromJSONFile(Utils.dbFile);
-        String selCategory=null;
-        selCategory=(String)categoryCb.getSelectionModel().getSelectedItem();
+        String selCategory = null;
+        try{
+            selCategory=(String)categoryCb.getSelectionModel().getSelectedItem();
+        } catch (Exception e) {
+            selCategory=null;
+        }
+        String selComposition = null;
+        try{
+            selComposition=(String)compositionCb.getSelectionModel().getSelectedItem();
+        } catch (Exception e) {
+            selComposition=null;
+        }
         String finalSelCategory = selCategory;
+        String finalSelComposition = selComposition;
         List<Artifact> filtered = allArtifacts.stream()
-                .filter(a -> a.getArtifactName().contains(artifactNameTf.getText())
+                .filter(a -> (artifactIdTf.getText()!=null && artifactIdTf.getText().trim().length()>0?a.getArtifactId().contains(artifactIdTf.getText().trim()):true)
+                        && (artifactNameTf.getText()!=null && artifactNameTf.getText().trim().length()>0?a.getArtifactName().contains(artifactNameTf.getText().trim()):true)
                         && (civilizationTf.getText()!=null && civilizationTf.getText().trim().length()>0?a.getCivilization().contains(civilizationTf.getText().trim()):true)
                         && (currPlaceTf.getText()!=null && currPlaceTf.getText().trim().length()>0?a.getCurrentLocation().contains(currPlaceTf.getText().trim()):true)
                         && (disLocationTf.getText()!=null && disLocationTf.getText().trim().length()>0?a.getDiscoveryLocation().contains(disLocationTf.getText().trim()):true)
                         && (finalSelCategory !=null && finalSelCategory.trim().length()>0?a.getCategory().contains(finalSelCategory.trim()):true)
+                        && (finalSelComposition !=null && finalSelComposition.trim().length()>0?a.getComposition().contains(finalSelComposition.trim()):true)
                 )
                 .collect(Collectors.toList());
 

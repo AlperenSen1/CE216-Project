@@ -35,14 +35,21 @@
                     <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
                 </rowConstraints>
                 <children>
-                    <Label text="ArtifactName" />
-                    <TextField fx:id="artifactNameTf" GridPane.columnIndex="1" />
-                    <TextField fx:id="disLocationTf" GridPane.columnIndex="3" GridPane.rowIndex="1" />
-                    <TextField fx:id="civilizationTf" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                    <Label text="Artifact Id" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                    <TextField fx:id="artifactIdTf" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                    <Label text="ArtifactName" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+                    <TextField fx:id="artifactNameTf" GridPane.columnIndex="4" GridPane.rowIndex="1"/>
 
-                    <ComboBox fx:id="categoryCb" prefHeight="25.0" prefWidth="247.0" GridPane.columnIndex="3">
+                    <Label text="Civilization" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                    <TextField fx:id="civilizationTf" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                    <Label text="DiscoveryLocation" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+                    <TextField fx:id="disLocationTf" GridPane.columnIndex="4" GridPane.rowIndex="2" />
+
+                    <Label text="Category" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                    <ComboBox fx:id="categoryCb" prefHeight="25.0" prefWidth="247.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
                         <items>
                             <FXCollections fx:factory="observableArrayList">
+                                <String fx:value=""/>
                                 <String fx:value="Sculpture" />
                                 <String fx:value="Manuscript" />
                                 <String fx:value="Weapon" />
@@ -51,10 +58,11 @@
                             </FXCollections>
                         </items>
                     </ComboBox>
-
-                    <ComboBox fx:id="compositionCb" prefHeight="25.0" prefWidth="239.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                    <Label text="Composition" GridPane.columnIndex="3" GridPane.rowIndex="3" />
+                    <ComboBox fx:id="compositionCb" prefHeight="25.0" prefWidth="239.0" GridPane.columnIndex="4" GridPane.rowIndex="3">
                         <items>
                             <FXCollections fx:factory="observableArrayList">
+                                <String fx:value=""/>
                                 <String fx:value="Gold" />
                                 <String fx:value="Clay" />
                                 <String fx:value="Papyrus" />
@@ -64,37 +72,9 @@
                         </items>
                     </ComboBox>
 
-                    <DatePicker fx:id="disDateDp" prefHeight="25.0" prefWidth="247.0" GridPane.columnIndex="3" GridPane.rowIndex="2" />
-                    <TextField fx:id="currPlaceTf" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                    <TextField fx:id="dimensionsTf" GridPane.columnIndex="3" GridPane.rowIndex="3" />
-                    <TextArea fx:id="weightTf" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-
-                    <ChoiceBox fx:id="tagsCC" prefHeight="25.0" prefWidth="248.0" GridPane.columnIndex="3" GridPane.rowIndex="4">
-                        <items>
-                            <FXCollections fx:factory="observableArrayList">
-                                <String fx:value="hellenistic" />
-                                <String fx:value="neoclassical" />
-                                <String fx:value="contemporary" />
-                                <String fx:value="sword" />
-                                <String fx:value="bow" />
-                                <String fx:value="axe" />
-                                <String fx:value="necklace" />
-                                <String fx:value="ring" />
-                            </FXCollections>
-                        </items>
-                    </ChoiceBox>
-
-                    <Label text="Civilization" GridPane.rowIndex="1" />
-                    <Label text="Composition" GridPane.rowIndex="2" />
-                    <Label text="CurrentPlace" GridPane.rowIndex="3" />
-                    <Label text="Weight" GridPane.rowIndex="4" />
-                    <Label text="Category" GridPane.columnIndex="2" />
-                    <Label text="DiscoveryLocation" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-                    <Label text="DiscoveryDate" GridPane.columnIndex="2" GridPane.rowIndex="2" />
-                    <Label text="Dimensions" GridPane.columnIndex="2" GridPane.rowIndex="3" />
-                    <Label text="Tags" GridPane.columnIndex="2" GridPane.rowIndex="4" />
-
-                    <Button fx:id="searchArtifactBtn" onAction="#onSearchArtifactBtnClick" prefHeight="25.0" prefWidth="244.0" text="Search" GridPane.columnIndex="3" GridPane.rowIndex="5" />
+                    <Label text="CurrentPlace" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                    <TextField fx:id="currPlaceTf" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                    <Button fx:id="searchArtifactBtn" onAction="#onSearchArtifactBtnClick" prefHeight="25.0" prefWidth="244.0" text="Search" GridPane.columnIndex="4" GridPane.rowIndex="4" />
                 </children>
             </GridPane>
 
