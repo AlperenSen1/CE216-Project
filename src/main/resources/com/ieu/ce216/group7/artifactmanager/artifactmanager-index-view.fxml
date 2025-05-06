@@ -5,9 +5,9 @@
 <?import javafx.scene.layout.*?>
 
 <VBox alignment="CENTER" prefHeight="664.0" prefWidth="806.0" spacing="20.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ieu.ce216.group7.artifactmanager.ArtifactManagerController">
-   <padding>
-      <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-   </padding>
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
    <children>
       <HBox fx:id="contextPathHbox" alignment="CENTER" prefHeight="53.0" prefWidth="766.0" visible="false">
          <children>
@@ -16,11 +16,11 @@
             <Button mnemonicParsing="false" text="Save" fx:id="saveContextPathBtn" visible="false" onAction="#onSaveContextPathBtnClick"/>
          </children>
       </HBox>
-
-      <VBox spacing="10" alignment="CENTER">
-         <Button fx:id="displayArtifactsBtn" mnemonicParsing="false" onAction="#onDisplayArtifactsBtnClick" prefHeight="33.0" prefWidth="150.0" text="Display Artifacts" />
-         <Button fx:id="newArtifactBtn" onAction="#onNewArtifactBtnClick" mnemonicParsing="false" prefHeight="33.0" prefWidth="150.0" text="New Artifact" />
-         <Button text="Help" onAction="#onHelpBtnClick" prefHeight="33.0" prefWidth="150.0" />
-      </VBox>
+      <HBox prefHeight="100.0" prefWidth="200.0">
+         <children>
+            <Button fx:id="displayArtifactsBtn" mnemonicParsing="false" onAction="#onDisplayArtifactsBtnClick" prefHeight="33.0" prefWidth="119.0" text="Display Artifacts" />
+            <Button fx:id="newArtifactBtn" onAction="#onNewArtifactBtnClick" mnemonicParsing="false" prefHeight="33.0" prefWidth="119.0" text="New Artifact" />
+         </children>
+      </HBox>
    </children>
 </VBox>

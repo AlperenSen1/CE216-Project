@@ -5,6 +5,6 @@ module com.ieu.ce216.group7.artifactmanager {
 
 
     opens com.ieu.ce216.group7.artifactmanager to javafx.fxml;
-    opens com.ieu.ce216.group7.artifactmanager.model to com.fasterxml.jackson.databind,javafx.base;
+    opens com.ieu.ce216.group7.artifactmanager.model to com.fasterxml.jackson.databind;
     exports com.ieu.ce216.group7.artifactmanager;
 }
