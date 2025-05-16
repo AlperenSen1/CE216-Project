@@ -110,6 +110,7 @@ public class ArtifactManagerController {
             contextPathHbox.setVisible(true);
             contextPathLbl.setVisible(true);
             contextPathTf.setVisible(true);
+            contextPathTf.setText(System.getProperty("user.home"));
             saveContextPathBtn.setVisible(true);
         }
     }
@@ -138,6 +139,7 @@ public class ArtifactManagerController {
             contextPathHbox.setVisible(true);
             contextPathLbl.setVisible(true);
             contextPathTf.setVisible(true);
+            contextPathTf.setText(System.getProperty("user.home"));
             saveContextPathBtn.setVisible(true);
         }
     }
