@@ -76,6 +76,8 @@ public class ArtifactListController {
 
         tagFilterList.getItems().addAll("hellenistic", "neoclassical", "contemporary", "sword", "bow", "axe", "necklace", "ring");
         tagFilterList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
+        addImageButtonToTable();
     }
 
     public void populateTable(List<Artifact> artifactList) {
