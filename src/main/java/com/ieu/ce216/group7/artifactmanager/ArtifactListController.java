@@ -5,10 +5,15 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -214,5 +219,67 @@ public class ArtifactListController {
                 .collect(Collectors.toList());
 
         populateTable(filtered);
+    }
+
+    private void addImageButtonToTable() {
+        TableColumn<Artifact, Void> colBtn = new TableColumn<>("Image");
+
+        colBtn.setCellFactory(param -> new TableCell<>() {
+            private final Button btn = new Button("Show Image");
+
+            {
+                btn.setOnAction(event -> {
+                    Artifact artifact = getTableView().getItems().get(getIndex());
+                    String imagePath = artifact.getImagePath();
+                    if (imagePath != null && !imagePath.isEmpty()) {
+                        File imageFile = new File(imagePath);
+                        if (imageFile.exists()) {
+                            showImagePopup(imageFile);
+                        } else {
+                            showAlert("Image file not found.");
+                        }
+                    } else {
+                        showAlert("No image assigned to this artifact.");
+                    }
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(btn);
+                }
+            }
+        });
+
+        artifactTable.getColumns().add(colBtn);
+    }
+
+    private void showImagePopup(File imageFile) {
+        Image image = new Image(imageFile.toURI().toString());
+        ImageView imageView = new ImageView(image);
+        imageView.setPreserveRatio(true);
+        imageView.setFitWidth(400);
+
+        VBox vbox = new VBox(imageView);
+        vbox.setAlignment(Pos.CENTER);
+        vbox.setPadding(new Insets(10));
+
+        Scene scene = new Scene(vbox);
+        Stage stage = new Stage();
+        stage.setTitle("Artifact Image");
+        stage.setScene(scene);
+        stage.show();
+    }
+
+    private void showAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Image Info");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }
