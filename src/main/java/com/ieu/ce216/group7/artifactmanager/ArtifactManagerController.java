@@ -35,7 +35,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ArtifactManagerController {
 
-
+    public String selectedArtifactId=null;
     public TextField artifactNameTf;
     public TextField disLocationTf;
     public TextField civilizationTf;
@@ -83,6 +83,7 @@ public class ArtifactManagerController {
     protected void onDisplayArtifactsBtnClick() {
         if (Utils.checkContextPath()) {
             try {
+                selectedArtifactId=null;
                 FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("artifactmanager-listartifacts-view.fxml"));
                 Parent root1 = fxmlLoader.load();
 
@@ -123,6 +124,7 @@ public class ArtifactManagerController {
         if(Utils.checkContextPath()){
             //TODO  open new artifact window
             try {
+                selectedArtifactId=null;
                 FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("artifactmanager-newartifact-view.fxml"));
                 Parent root1 = (Parent) fxmlLoader.load();
                 Stage stage = new Stage();
@@ -169,20 +171,51 @@ public class ArtifactManagerController {
 
     @FXML
     protected void onSaveArtifactBtnClick() {
-
+        boolean saveArtifact=true;
+        String msg=null;
         List<Artifact> artifacts=JSONFileHandler.getArtifactsFromJSONFile(Utils.dbFile);
 
         Artifact artifact = new Artifact();
-        artifact.setArtifactId(disDateDp.getValue().getYear()+currPlaceTf.getText().substring(0,3)+artifactNameTf.getText().substring(0,3));
-        artifact.setArtifactName(artifactNameTf.getText());
+        if(selectedArtifactId==null) {
+            artifact.setArtifactId(disDateDp.getValue().getYear() + currPlaceTf.getText().substring(0, 3) + artifactNameTf.getText().substring(0, 3));
+        }else{
+            artifact.setArtifactId(selectedArtifactId);
+        }
+        if(artifactNameTf.getText()!=null && artifactNameTf.getText().trim().length()>0) {
+            artifact.setArtifactName(artifactNameTf.getText());
+        }else{
+            msg="Please enter Artifact Name";
+            saveArtifact=false;
+        }
         artifact.setCivilization(civilizationTf.getText());
-        artifact.setCategory(categoryCb.getSelectionModel().getSelectedItem().toString());
+        try {
+            artifact.setCategory(categoryCb.getSelectionModel().getSelectedItem().toString());
+        } catch (Exception e) {
+
+        }
         artifact.setDiscoveryLocation(disLocationTf.getText());
-        artifact.setDiscoverydate(Date.from(disDateDp.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant()));
-        artifact.setComposition(compositionCb.getSelectionModel().getSelectedItem().toString());
+        try {
+            artifact.setDiscoverydate(Date.from(disDateDp.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant()));
+        } catch (Exception e) {
+            msg="Please select Discovery Date";
+            saveArtifact=false;
+        }
+        try {
+            artifact.setComposition(compositionCb.getSelectionModel().getSelectedItem().toString());
+        } catch (Exception e) {
+
+        }
         artifact.setCurrentLocation(currPlaceTf.getText());
-        artifact.setTags(tagsCC.getSelectionModel().getSelectedItem().toString());
-        artifact.setWeight(Double.parseDouble(weightTf.getText()));
+        try {
+            artifact.setTags(tagsCC.getSelectionModel().getSelectedItem().toString());
+        } catch (Exception e) {
+
+        }
+        try {
+            artifact.setWeight(Double.parseDouble(weightTf.getText()));
+        } catch (Exception e) {
+
+        }
         artifact.setImagePath(selectedImagePath);
 
 
@@ -198,15 +231,46 @@ public class ArtifactManagerController {
         if(artifacts==null){
             artifacts=new ArrayList<Artifact>();
         }
-        artifacts.add(artifact);
 
-        JSONFileHandler.saveArtifacts(artifacts, Utils.dbFile);
-        Alert a = new Alert(Alert.AlertType.INFORMATION);
-        a.setContentText("Artifact Saved with Id: "+artifact.getArtifactId());
-        a.show();
+        if(selectedArtifactId==null){
+            List<Artifact> filtered = artifacts.stream()
+                    .filter(
+                            a -> a.getArtifactId().equals(artifact.getArtifactId())
+
+                    )
+                    .collect(Collectors.toList());
+            if(!filtered.isEmpty()){
+                saveArtifact=false;
+                msg="An artifact with same id exists in DB ";
+
+            }
+        }
+
+        if(saveArtifact){
+            if(selectedArtifactId!=null){
+                artifacts.removeIf(a -> a.getArtifactId().equals(selectedArtifactId));
+            }
+            artifacts.add(artifact);
+            if(JSONFileHandler.saveArtifacts(artifacts, Utils.dbFile).equals("1")) {
+                selectedArtifactId=artifact.getArtifactId();
+                Alert a = new Alert(Alert.AlertType.INFORMATION);
+                a.setContentText("Artifact Saved with Id: " + artifact.getArtifactId());
+                a.show();
+            }else{
+                saveArtifact=false;
+                msg="An error occured ";
+            }
+        }
+
+        if(!saveArtifact && msg!=null){
+            Alert a = new Alert(Alert.AlertType.ERROR);
+            a.setContentText(msg);
+            a.show();
+        }
+
 
         // open list screen after save
-        onDisplayArtifactsBtnClick();
+        // onDisplayArtifactsBtnClick();
 
 
     }
@@ -254,6 +318,7 @@ public class ArtifactManagerController {
     }
 
     public void fillArtifactFormForEdit(Artifact artifact) {
+        selectedArtifactId = artifact.getArtifactId();
         artifactNameTf.setText(artifact.getArtifactName());
         civilizationTf.setText(artifact.getCivilization());
         disLocationTf.setText(artifact.getDiscoveryLocation());
@@ -277,9 +342,9 @@ public class ArtifactManagerController {
         if (selectedImagePathLbl != null) selectedImagePathLbl.setText(selectedImagePath);
 
         // delete artifact before save (to save with Same Id)
-        List<Artifact> artifacts = JSONFileHandler.getArtifactsFromJSONFile(Utils.dbFile);
-        artifacts.removeIf(a -> a.getArtifactId().equals(artifact.getArtifactId()));
-        JSONFileHandler.saveArtifacts(artifacts, Utils.dbFile);
+        //List<Artifact> artifacts = JSONFileHandler.getArtifactsFromJSONFile(Utils.dbFile);
+        //artifacts.removeIf(a -> a.getArtifactId().equals(artifact.getArtifactId()));
+        //JSONFileHandler.saveArtifacts(artifacts, Utils.dbFile);
     }
 
     @FXML
